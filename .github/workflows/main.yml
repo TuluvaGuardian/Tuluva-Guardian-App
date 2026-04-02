@@ -9,31 +9,28 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Full Project Generation
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build Tuluva Guardian APK
         run: |
           npm install -g @bubblewrap/cli
-          mkdir -p ~/.bubblewrap
-          echo '{"jdkPath":"/usr/lib/jvm/temurin-17-jdk-amd64","androidSdkPath":"/usr/local/lib/android/sdk"}' > ~/.bubblewrap/config.json
           
-          # This command creates a brand new TWA project without needing an external URL
-          bubblewrap init --manifest https://tuluva-guardian.tuluvaguardian.replit.app/manifest.json --quiet --yes || true
+          # Initialize the project using your Replit manifest
+          # We use --yes to bypass any missing icon errors automatically
+          yes | bubblewrap init --manifest https://tuluva-guardian.tuluvaguardian.replit.app/manifest.json --quiet --yes
           
-          # If init failed, we force a build using a local configuration we create right now
-          if [ ! -f "twa-manifest.json" ]; then
-            echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"signingKey":{"path":"./tuluva-guardian.keystore","alias":"tuluva"},"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
-          fi
-
-          # Final build command
+          # Force the build to ignore signing since we just need the APK for testing
           bubblewrap build --skipSigning
           
-      - name: Upload Tuluva Guardian APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Tuluva-Guardian-Final-APK
+          name: Tuluva-Guardian-Release
           path: ./*.apk
           
