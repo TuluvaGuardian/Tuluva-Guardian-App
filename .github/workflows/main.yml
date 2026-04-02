@@ -17,7 +17,10 @@ jobs:
       - name: Build Clean APK
         run: |
           npm install -g @bubblewrap/cli
-          # This version bypasses the interactive questions that caused the error
+          # This line bypasses the freeze by creating a dummy configuration
+          mkdir -p ~/.bubblewrap
+          echo '{"jdkPath":"/usr/lib/jvm/temurin-17-jdk-amd64","androidSdkPath":"/home/runner/android-sdk"}' > ~/.bubblewrap/config.json
+          
           bubblewrap init --manifest https://tuluva-guardian.tuluvaguardian.replit.app/manifest.json --quiet --yes
           bubblewrap build --skipSigning
           
