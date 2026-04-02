@@ -17,20 +17,32 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Build Tuluva Guardian APK
+      - name: Force Build Without Network
         run: |
           npm install -g @bubblewrap/cli
           
-          # Initialize the project using your Replit manifest
-          # We use --yes to bypass any missing icon errors automatically
-          yes | bubblewrap init --manifest https://tuluva-guardian.tuluvaguardian.replit.app/manifest.json --quiet --yes
+          # 1. Create a local manifest file so we don't have to fetch from Replit
+          cat <<EOF > manifest.json
+          {
+            "name": "Tuluva Guardian",
+            "short_name": "Tuluva",
+            "start_url": "https://tuluva-guardian.tuluvaguardian.replit.app/",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#000000",
+            "icons": [{"src": "https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png", "sizes": "512x512", "type": "image/png"}]
+          }
+          EOF
+
+          # 2. Initialize using the file we just made
+          yes | bubblewrap init --manifest ./manifest.json --quiet --yes
           
-          # Force the build to ignore signing since we just need the APK for testing
+          # 3. Final build
           bubblewrap build --skipSigning
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Tuluva-Guardian-Release
+          name: Tuluva-Guardian-Final
           path: ./*.apk
           
