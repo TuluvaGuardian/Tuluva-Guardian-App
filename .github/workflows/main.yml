@@ -14,19 +14,19 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build APK (Local Manifest)
+      - name: Build APK (GitHub Raw Link)
         run: |
           npm install -g @bubblewrap/cli
           mkdir -p ~/.bubblewrap
           echo '{"jdkPath":"/usr/lib/jvm/temurin-17-jdk-amd64","androidSdkPath":"/usr/local/lib/android/sdk"}' > ~/.bubblewrap/config.json
           
-          # We use the manifest file already in your GitHub repo to avoid network errors
-          yes | bubblewrap init --manifest ./manifest.json --quiet --yes
+          # Using your specific GitHub Raw URL to bypass Replit and local file errors
+          yes | bubblewrap init --manifest https://raw.githubusercontent.com/TuluvaGuardian/Tuluva-Guardian-App/main/manifest.json --quiet --yes
           bubblewrap build --skipSigning
           
       - name: Upload Tuluva Guardian APK
         uses: actions/upload-artifact@v4
         with:
-          name: Tuluva-Guardian-Final-APK
+          name: Tuluva-Guardian-Installer
           path: ./*.apk
           
