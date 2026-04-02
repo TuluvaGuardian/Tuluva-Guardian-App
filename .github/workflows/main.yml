@@ -17,7 +17,7 @@ jobs:
       - name: Build Clean APK
         run: |
           npm install -g @bubblewrap/cli
-          # This command points to your LIVE Replit URL to build the app
+          # This version bypasses the interactive questions that caused the error
           bubblewrap init --manifest https://tuluva-guardian.tuluvaguardian.replit.app/manifest.json --quiet --yes
           bubblewrap build --skipSigning
           
