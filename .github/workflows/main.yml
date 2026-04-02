@@ -14,14 +14,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Force Build Without Network
+      - name: Build Tuluva Guardian APK
         run: |
           npm install -g @bubblewrap/cli
           
-          # 1. Create a local manifest file so we don't have to fetch from Replit
+          # Create a local manifest to avoid Replit connection errors
           cat <<EOF > manifest.json
           {
             "name": "Tuluva Guardian",
@@ -34,10 +31,8 @@ jobs:
           }
           EOF
 
-          # 2. Initialize using the file we just made
+          # We skip the manual config.json and let the CLI find Java/SDK automatically
           yes | bubblewrap init --manifest ./manifest.json --quiet --yes
-          
-          # 3. Final build
           bubblewrap build --skipSigning
           
       - name: Upload APK
