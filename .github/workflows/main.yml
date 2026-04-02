@@ -14,38 +14,26 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build APK (Auto-Fix Manifest)
+      - name: Full Project Generation
         run: |
           npm install -g @bubblewrap/cli
           mkdir -p ~/.bubblewrap
           echo '{"jdkPath":"/usr/lib/jvm/temurin-17-jdk-amd64","androidSdkPath":"/usr/local/lib/android/sdk"}' > ~/.bubblewrap/config.json
           
-          # This creates a brand new, clean manifest file to fix the 'JSON position 3' error
-          cat <<EOF > clean_manifest.json
-          {
-            "name": "Tuluva Guardian",
-            "short_name": "Tuluva",
-            "start_url": "https://tuluva-guardian.tuluvaguardian.replit.app/",
-            "display": "standalone",
-            "background_color": "#ffffff",
-            "theme_color": "#000000",
-            "icons": [
-              {
-                "src": "https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png",
-                "sizes": "512x512",
-                "type": "image/png"
-              }
-            ]
-          }
-          EOF
+          # This command creates a brand new TWA project without needing an external URL
+          bubblewrap init --manifest https://tuluva-guardian.tuluvaguardian.replit.app/manifest.json --quiet --yes || true
           
-          # Build using the clean file
-          yes | bubblewrap init --manifest ./clean_manifest.json --quiet --yes
+          # If init failed, we force a build using a local configuration we create right now
+          if [ ! -f "twa-manifest.json" ]; then
+            echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"signingKey":{"path":"./tuluva-guardian.keystore","alias":"tuluva"},"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
+          fi
+
+          # Final build command
           bubblewrap build --skipSigning
           
       - name: Upload Tuluva Guardian APK
         uses: actions/upload-artifact@v4
         with:
-          name: Tuluva-Guardian-Final
+          name: Tuluva-Guardian-Final-APK
           path: ./*.apk
           
