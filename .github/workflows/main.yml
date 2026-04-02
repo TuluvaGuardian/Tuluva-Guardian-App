@@ -14,13 +14,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build Clean APK
+      - name: Build APK without Icons
         run: |
           npm install -g @bubblewrap/cli
-          # This line bypasses the freeze by creating a dummy configuration
-          mkdir -p ~/.bubblewrap
-          echo '{"jdkPath":"/usr/lib/jvm/temurin-17-jdk-amd64","androidSdkPath":"/home/runner/android-sdk"}' > ~/.bubblewrap/config.json
+          # This creates a dummy icon so the build doesn't fail
+          mkdir -p android_icons
+          curl -L https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png -o icon.png
           
+          # Force the build to ignore missing local files
           bubblewrap init --manifest https://tuluva-guardian.tuluvaguardian.replit.app/manifest.json --quiet --yes
           bubblewrap build --skipSigning
           
