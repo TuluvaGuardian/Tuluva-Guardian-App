@@ -8,19 +8,23 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Java
+        uses: actions/setup-java@v3
         with:
-          node-version: 20
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: Build APK
+      - name: Build APK (Emergency Mode)
         run: |
           npm install -g @bubblewrap/cli
-          # This command creates the config folder first to prevent the 'Enter' key prompt
+          # This creates the missing config folder to stop the freeze
           mkdir -p ~/.bubblewrap
-          echo '{"jdkPath":"/usr/lib/jvm/java-17-openjdk-amd64","androidSdkPath":"/usr/local/lib/android/sdk"}' > ~/.bubblewrap/config.json
+          echo '{"jdkPath":"/usr/lib/jvm/temurin-17-jdk-amd64","androidSdkPath":"/usr/local/lib/android/sdk"}' > ~/.bubblewrap/config.json
           
-          # We force the 'yes' through a pipe to stop the freeze
+          # This creates a placeholder icon so it doesn't crash
+          curl -L https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png -o icon.png
+          
+          # Force 'yes' to all prompts and build
           yes | bubblewrap init --manifest https://tuluva-guardian.tuluvaguardian.replit.app/manifest.json --quiet
           bubblewrap build --skipSigning
           
