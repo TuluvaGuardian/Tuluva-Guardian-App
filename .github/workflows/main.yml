@@ -14,19 +14,38 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build APK (GitHub Raw Link)
+      - name: Build APK (Auto-Fix Manifest)
         run: |
           npm install -g @bubblewrap/cli
           mkdir -p ~/.bubblewrap
           echo '{"jdkPath":"/usr/lib/jvm/temurin-17-jdk-amd64","androidSdkPath":"/usr/local/lib/android/sdk"}' > ~/.bubblewrap/config.json
           
-          # Using your specific GitHub Raw URL to bypass Replit and local file errors
-          yes | bubblewrap init --manifest https://raw.githubusercontent.com/TuluvaGuardian/Tuluva-Guardian-App/main/manifest.json --quiet --yes
+          # This creates a brand new, clean manifest file to fix the 'JSON position 3' error
+          cat <<EOF > clean_manifest.json
+          {
+            "name": "Tuluva Guardian",
+            "short_name": "Tuluva",
+            "start_url": "https://tuluva-guardian.tuluvaguardian.replit.app/",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#000000",
+            "icons": [
+              {
+                "src": "https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png",
+                "sizes": "512x512",
+                "type": "image/png"
+              }
+            ]
+          }
+          EOF
+          
+          # Build using the clean file
+          yes | bubblewrap init --manifest ./clean_manifest.json --quiet --yes
           bubblewrap build --skipSigning
           
       - name: Upload Tuluva Guardian APK
         uses: actions/upload-artifact@v4
         with:
-          name: Tuluva-Guardian-Installer
+          name: Tuluva-Guardian-Final
           path: ./*.apk
           
