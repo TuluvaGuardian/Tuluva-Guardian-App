@@ -26,16 +26,17 @@ jobs:
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
           
-          # 1. Create the manifest
+          # 1. Create a complete manifest
           echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
           
-          # 2. Force the update without asking (This stops the Y/N hang)
-          bubblewrap update --manifest twa-manifest.json --yes
+          # 2. FORCE INITIALIZATION (This creates the project structure silently)
+          bubblewrap init --manifest twa-manifest.json --directory ./ --metaData ./ --no-interactive || true
           
-          # 3. Build while explicitly skipping signing
-          bubblewrap build --skipSigning --yes
+          # 3. BUILD USING THE 'YES' PIPE ON STEROIDS
+          # This specifically answers the versionName prompt that broke Run 42
+          printf "1.0.0\n1\n" | bubblewrap build --skipSigning
           
-          # 4. Move everything to the root
+          # 4. Grab the APK
           find . -name "*.apk" -exec cp {} . \;
 
       - name: Upload APK
