@@ -21,18 +21,18 @@ jobs:
         run: |
           npm install -g @bubblewrap/cli
           
-          # 1. Pre-configure paths
+          # 1. Setup local config
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
           
-          # 2. Create the key
+          # 2. Generate the key (This was successful in your last run)
           keytool -genkey -v -keystore android.keystore -alias android -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=Tuluva, OU=Guardian, O=TGIK, L=Udupi, S=KA, C=IN"
           
-          # 3. Create manifest
+          # 3. Create the manifest
           echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"signingKey":{"path":"./android.keystore","alias":"android"},"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
           
-          # 4. Final Build - This "feeds" the answers to the prompts
-          # It types: 'password', 'password', then '1.0.0'
+          # 4. FIX: Use heredoc to answer 'password' and then '1.0.0'
+          # This stops the infinite 'y' loop by giving actual text answers.
           bubblewrap update --quiet
           bubblewrap build <<EOF
           password
@@ -43,6 +43,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Tuluva-Guardian-Final
+          name: Tuluva-Guardian-Release
           path: ./*.apk
           
