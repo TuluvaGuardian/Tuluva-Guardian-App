@@ -26,17 +26,20 @@ jobs:
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
           
-          # 1. Create a complete manifest
+          # 1. Create the manifest
           echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
           
-          # 2. FORCE INITIALIZATION (This creates the project structure silently)
+          # 2. Initialize silently
           bubblewrap init --manifest twa-manifest.json --directory ./ --metaData ./ --no-interactive || true
           
-          # 3. BUILD USING THE 'YES' PIPE ON STEROIDS
-          # This specifically answers the versionName prompt that broke Run 42
+          # 3. THE CRITICAL FIX: Grant permission to the build tool
+          # This stops the './gradlew: not found' error from Run 43
+          chmod +x gradlew || true
+          
+          # 4. Build with automated answers
           printf "1.0.0\n1\n" | bubblewrap build --skipSigning
           
-          # 4. Grab the APK
+          # 5. Move APK to root
           find . -name "*.apk" -exec cp {} . \;
 
       - name: Upload APK
