@@ -18,16 +18,24 @@ jobs:
         run: |
           npm install -g @bubblewrap/cli
           
-          # We create the project structure manually to avoid the 'Invalid URL' error
-          # This ensures the builder has everything it needs locally
-          bubblewrap init --manifest https://raw.githubusercontent.com/TuluvaGuardian/Tuluva-Guardian-App/main/manifest.json --quiet --yes || true
-          
-          # Force the creation of a local config if the init failed
-          if [ ! -f "twa-manifest.json" ]; then
-            echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"signingKey":{"path":"./tuluva-guardian.keystore","alias":"tuluva"},"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
-          fi
+          # Create local manifest to bypass network and path errors
+          cat <<EOF > manifest.json
+          {
+            "name": "Tuluva Guardian",
+            "short_name": "Tuluva",
+            "start_url": "https://tuluva-guardian.tuluvaguardian.replit.app/",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#000000",
+            "icons": [{"src": "https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png", "sizes": "512x512", "type": "image/png"}]
+          }
+          EOF
 
-          # Using the official Android SDK already on the runner to fix 'androidSdk' errors
+          # This 'printf' line automatically answers "N" to the setup questions 
+          # that were causing the Exit Code 130 freeze.
+          printf "N\nN\n" | bubblewrap init --manifest ./manifest.json --quiet --yes || true
+          
+          # Manually point to the pre-installed SDK if needed, then build
           bubblewrap build --skipSigning
           
       - name: Upload APK
