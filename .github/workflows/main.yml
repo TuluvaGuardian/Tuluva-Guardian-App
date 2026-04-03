@@ -26,23 +26,18 @@ jobs:
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
           
-          # 1. Create the manifest
+          # 1. Manually create the internal configuration file that Bubblewrap looks for
+          # This tricks the tool into thinking 'init' was already successful
           echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
           
-          # 2. Force project generation with a Heredoc
-          # This types every answer for you automatically
-          bubblewrap init --manifest twa-manifest.json <<EOF
-          y
-          n
-          EOF
+          # 2. Skip the 'init' command entirely to bypass 'Invalid URL' errors
+          # Instead, we tell Bubblewrap to just build the APK from the existing manifest
+          bubblewrap build --manifest twa-manifest.json --skipSigning --yes
           
-          # 3. Fix permissions that caused failure in Run 43/44
+          # 3. Handle any permission issues with the generated gradle wrapper
           chmod +x gradlew || true
           
-          # 4. Build while forcing version numbers
-          bubblewrap build --skipSigning --versionName "1.0.0" --versionCode 1 --yes
-          
-          # 5. Move the APK
+          # 4. Final collection of the APK
           find . -name "*.apk" -exec cp {} . \;
 
       - name: Upload APK
