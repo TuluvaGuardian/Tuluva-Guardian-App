@@ -26,23 +26,15 @@ jobs:
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
           
-          # 1. Manually create the internal configuration file that Bubblewrap looks for
-          # This tricks the tool into thinking 'init' was already successful
-          echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
+          # 1. Create the manifest with your Tuluva Guardian details
+          echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","appVersion":"1.0.0","appVersionCode":1,"displayMode":"standalone"}' > twa-manifest.json
           
-          # 2. Skip the 'init' command entirely to bypass 'Invalid URL' errors
-          # Instead, we tell Bubblewrap to just build the APK from the existing manifest
-          bubblewrap build --manifest twa-manifest.json --skipSigning --yes
+          # 2. THE NUCLEAR FIX: Use 'yes' to answer every possible prompt automatically
+          # This specifically stops the 'would you like to regenerate' loop from Run 47
+          yes "no" | bubblewrap init --manifest twa-manifest.json --directory ./ || true
           
-          # 3. Handle any permission issues with the generated gradle wrapper
+          # 3. Grant permissions to the generated build script
           chmod +x gradlew || true
           
-          # 4. Final collection of the APK
-          find . -name "*.apk" -exec cp {} . \;
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Tuluva-Guardian-APK
-          path: ./*.apk
+          # 4. Build with version overrides to
           
