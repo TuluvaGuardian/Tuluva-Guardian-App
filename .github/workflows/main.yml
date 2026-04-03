@@ -20,30 +20,31 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Build Tuluva Guardian APK
+      - name: Manual TWA Build
         run: |
           npm install -g @bubblewrap/cli
+          # Create a dummy config to satisfy the environment
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
           
-          # 1. Create the local manifest
-          echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
+          # Create the manifest
+          echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","appVersion":"1.0.0","appVersionCode":1,"displayMode":"standalone"}' > twa-manifest.json
           
-          # 2. THE FIX: Force initialization without validation or interaction
-          # We use || true to ensure it doesn't stop if it finds a warning
+          # USE THE 'INIT' COMMAND WITH A REDIRECT TO BYPASS THE URL CHECK
+          # This creates the project folders even if the URL 'fails' validation
           bubblewrap init --manifest twa-manifest.json --directory ./ --metaData ./ --no-interactive --skipStoreConsoleCheck || true
           
-          # 3. Fix permissions for the internal Gradle wrapper
-          chmod +x gradlew || true
+          # MANUALLY MODIFY THE CONFIG TO REMOVE THE URL VALIDATION HANG
+          sed -i 's/"checkConsole": true/"checkConsole": false/g' twa-manifest.json || true
           
-          # 4. Force the build to run skipping all console checks
-          bubblewrap build --skipSigning --versionName "1.0.0" --versionCode 1 --yes --skipStoreConsoleCheck
+          # FORCE THE BUILD
+          chmod +x gradlew || true
+          ./gradlew assembleRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Tuluva-Guardian-Final
-          # Search everywhere for the file
-          path: "**/*.apk"
+          name: Tuluva-Guardian-Final-APK
+          path: "**/release/*.apk"
           if-no-files-found: error
           
