@@ -35,9 +35,10 @@ jobs:
           # Build in quiet mode
           bubblewrap build --skipSigning --quiet || true
 
-      - name: Upload APK
+            - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Tuluva-Guardian-APK
-          path: ./**/*.apk
+          # This search looks everywhere in the project for the file
+          path: "**/*.apk"
           
