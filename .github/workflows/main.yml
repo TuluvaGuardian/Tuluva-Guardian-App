@@ -26,23 +26,22 @@ jobs:
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
           
-          # Create the manifest
           echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
           
-          # Fix the fingerprint to bypass prompts
           sha256sum twa-manifest.json | cut -d ' ' -f 1 > twa-manifest.json.sha256
           
-          # Build in quiet mode
+          # Run build and ensure it finishes
           bubblewrap build --skipSigning --quiet || true
           
-          # Show us exactly where the files are in the logs
-          echo "--- LISTING FILES FOR TROUBLESHOOTING ---"
-          find . -name "*.apk"
+          # MANUALLY FIND AND MOVE THE APK TO THE MAIN FOLDER
+          echo "Locating APK..."
+          find . -name "*.apk" -exec cp {} . \;
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Tuluva-Guardian-APK
-          path: "**/*.apk"
+          name: Tuluva-Guardian-Final-APK
+          # Now we look exactly in the root folder
+          path: ./*.apk
           if-no-files-found: error
           
