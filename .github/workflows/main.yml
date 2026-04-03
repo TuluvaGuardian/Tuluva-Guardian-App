@@ -35,9 +35,13 @@ jobs:
           # We use --skipSigning to avoid key prompts and --quiet for the rest
           bubblewrap build --skipSigning --quiet || true
           
-      - name: Upload APK
+      -       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Tuluva-Guardian-Final
-          path: ./*.apk
-          
+          # Bubblewrap usually names the file 'app-release-unsigned.apk' 
+          # or puts it in the root. This path ensures we find it.
+          path: |
+            ./*.apk
+            ./app-release-unsigned.apk
+            
