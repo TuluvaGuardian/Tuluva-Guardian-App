@@ -25,18 +25,20 @@ jobs:
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
           
-          # 2. Create manifest WITHOUT a specific keystore path
-          # This forces bubblewrap to use its own debug signing
-          echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
+          # 2. Create temporary signing key
+          keytool -genkey -v -keystore android.keystore -alias android -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=Tuluva, OU=Guardian, O=TGIK, L=Udupi, S=KA, C=IN"
           
-          # 3. Update and Build
-          # We use 'yes' to handle any final prompts about missing files
+          # 3. Create manifest with version details included
+          echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"signingKey":{"path":"./android.keystore","alias":"android"},"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
+          
+          # 4. Final Update and Build
+          # We add version flags to bypass the manual prompt you encountered
           yes | bubblewrap update --quiet
-          bubblewrap build --skipSigning
+          bubblewrap build --password password --keypassword password --versionName "1.0.0" --versionCode 1
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Tuluva-Guardian-Final
+          name: Tuluva-Guardian-Final-V1
           path: ./*.apk
           
