@@ -29,13 +29,11 @@ jobs:
           # 1. Create the manifest
           echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
           
-          # 2. Initialize the project (non-interactive)
-          bubblewrap init --manifest twa-manifest.json --directory ./ --metaData ./
+          # 2. Use 'yes' to auto-answer 'y' to the 'Would you like to generate' prompt
+          # This specifically targets the hang in Run #38
+          yes | bubblewrap build --skipSigning --versionName "1.0.0" --versionCode 1
           
-          # 3. Build with specific flags to skip all prompts
-          bubblewrap build --skipSigning --versionName "1.0.0" --versionCode 1
-          
-          # 4. Move any generated APK to the root
+          # 3. Move the file to the root
           find . -name "*.apk" -exec cp {} . \;
 
       - name: Upload APK
@@ -43,5 +41,4 @@ jobs:
         with:
           name: Tuluva-Guardian-APK
           path: ./*.apk
-          if-no-files-found: error
           
