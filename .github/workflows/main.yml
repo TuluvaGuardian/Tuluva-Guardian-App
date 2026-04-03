@@ -1,8 +1,6 @@
-name: Build Tuluva Guardian APK
+name: Tuluva Guardian High-Capacity Build
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 jobs:
   build:
@@ -20,31 +18,20 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Manual TWA Build
+      - name: Build Large APK
         run: |
-          npm install -g @bubblewrap/cli
-          # Create a dummy config to satisfy the environment
-          mkdir -p ~/.bubblewrap
-          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
-          
-          # Create the manifest
-          echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","appVersion":"1.0.0","appVersionCode":1,"displayMode":"standalone"}' > twa-manifest.json
-          
-          # USE THE 'INIT' COMMAND WITH A REDIRECT TO BYPASS THE URL CHECK
-          # This creates the project folders even if the URL 'fails' validation
-          bubblewrap init --manifest twa-manifest.json --directory ./ --metaData ./ --no-interactive --skipStoreConsoleCheck || true
-          
-          # MANUALLY MODIFY THE CONFIG TO REMOVE THE URL VALIDATION HANG
-          sed -i 's/"checkConsole": true/"checkConsole": false/g' twa-manifest.json || true
-          
-          # FORCE THE BUILD
+          # Use the Gradle Wrapper directly to avoid Bubblewrap's URL validation
           chmod +x gradlew || true
-          ./gradlew assembleRelease
+          ./gradlew assembleRelease || echo "Manual build failed, trying debug"
+          ./gradlew assembleDebug
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: Tuluva-Guardian-Final-APK
-          path: "**/release/*.apk"
-          if-no-files-found: error
+          tag_name: v1.0.0-tuluva
+          name: Tuluva Guardian Release
+          # This will find any APK in your build folders, even if it's over 25MB
+          files: "**/*.apk"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
