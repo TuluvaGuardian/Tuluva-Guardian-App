@@ -18,7 +18,11 @@ jobs:
         run: |
           npm install -g @bubblewrap/cli
           
-          # Create local manifest to bypass network and path errors
+          # 1. Manually create the configuration file to skip all setup questions
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
+          
+          # 2. Create local manifest to avoid network errors
           cat <<EOF > manifest.json
           {
             "name": "Tuluva Guardian",
@@ -31,11 +35,9 @@ jobs:
           }
           EOF
 
-          # This 'printf' line automatically answers "N" to the setup questions 
-          # that were causing the Exit Code 130 freeze.
-          printf "N\nN\n" | bubblewrap init --manifest ./manifest.json --quiet --yes || true
-          
-          # Manually point to the pre-installed SDK if needed, then build
+          # 3. Initialize and Build
+          # The --yes flag combined with our pre-made config.json skips the interactive hang
+          bubblewrap init --manifest ./manifest.json --quiet --yes
           bubblewrap build --skipSigning
           
       - name: Upload APK
