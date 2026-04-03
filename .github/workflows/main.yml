@@ -21,18 +21,17 @@ jobs:
         run: |
           npm install -g @bubblewrap/cli
           
-          # 1. Pre-configure paths to avoid setup questions
+          # 1. Pre-configure paths
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
           
-          # 2. Create the project manifest file
-          echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"signingKey":{"path":"./tuluva-guardian.keystore","alias":"tuluva"},"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
+          # 2. Create manifest WITHOUT a specific keystore path
+          # This forces bubblewrap to use its own debug signing
+          echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
           
-          # 3. Use 'update' to silently generate the missing checksum file
-          # This fixes the Exit Code 130 hang seen in the logs.
-          bubblewrap update --quiet
-          
-          # 4. Final Build
+          # 3. Update and Build
+          # We use 'yes' to handle any final prompts about missing files
+          yes | bubblewrap update --quiet
           bubblewrap build --skipSigning
           
       - name: Upload APK
