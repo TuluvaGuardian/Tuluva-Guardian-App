@@ -21,20 +21,22 @@ jobs:
         run: |
           npm install -g @bubblewrap/cli
           
-          # 1. Pre-configure the paths so it doesn't ask where Java/Android is
+          # 1. Pre-configure paths
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
           
-          # 2. Manually create the project manifest to skip the 'init' stage
+          # 2. Create the project manifest
           echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"signingKey":{"path":"./tuluva-guardian.keystore","alias":"tuluva"},"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
           
-          # 3. Use 'yes |' to automatically answer 'yes' to the regenerate prompt
-          # This specifically fixes the Exit Code 130 hang in Run #25
-          yes | bubblewrap build --skipSigning
+          # 3. FIX: Create the fingerprint file to stop the infinite 'y' loop
+          sha256sum twa-manifest.json | cut -d ' ' -f 1 > twa-manifest.json.sha256
+          
+          # 4. Build without interactive prompts
+          bubblewrap build --skipSigning
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Tuluva-Guardian-Final-APK
+          name: Tuluva-Guardian-Final
           path: ./*.apk
           
