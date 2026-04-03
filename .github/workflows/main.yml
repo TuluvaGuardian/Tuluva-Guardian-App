@@ -26,18 +26,22 @@ jobs:
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
           
-          # Create the manifest
+          # 1. Create the manifest
           echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
           
-          # THE FIX: This sends 'y' followed by Enter for every single prompt automatically
-          yes y | bubblewrap build --skipSigning
+          # 2. Initialize the project (non-interactive)
+          bubblewrap init --manifest twa-manifest.json --directory ./ --metaData ./
           
-          # Move the file to the root so we can find it
+          # 3. Build with specific flags to skip all prompts
+          bubblewrap build --skipSigning --versionName "1.0.0" --versionCode 1
+          
+          # 4. Move any generated APK to the root
           find . -name "*.apk" -exec cp {} . \;
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Tuluva-Guardian-Final-APK
+          name: Tuluva-Guardian-APK
           path: ./*.apk
+          if-no-files-found: error
           
