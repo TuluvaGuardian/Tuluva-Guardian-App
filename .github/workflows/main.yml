@@ -1,5 +1,8 @@
 name: Build Tuluva Guardian APK
-on: [workflow_dispatch, push]
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
 
 jobs:
   build:
@@ -20,28 +23,21 @@ jobs:
       - name: Build Tuluva Guardian APK
         run: |
           npm install -g @bubblewrap/cli
-          
-          # 1. Setup local config folders
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
           
-          # 2. Create the project manifest
+          # Create the manifest
           echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
           
-          # 3. THE FIX: Manually create the fingerprint so it doesn't ask to regenerate
+          # Force the fingerprint to stop the 'versionName' prompt
           sha256sum twa-manifest.json | cut -d ' ' -f 1 > twa-manifest.json.sha256
           
-          # 4. Build with NO questions allowed
-          # We use --skipSigning to avoid key prompts and --quiet for the rest
+          # Build in quiet mode
           bubblewrap build --skipSigning --quiet || true
-          
-      -       - name: Upload APK
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Tuluva-Guardian-Final
-          # Bubblewrap usually names the file 'app-release-unsigned.apk' 
-          # or puts it in the root. This path ensures we find it.
-          path: |
-            ./*.apk
-            ./app-release-unsigned.apk
-            
+          name: Tuluva-Guardian-APK
+          path: ./**/*.apk
+          
