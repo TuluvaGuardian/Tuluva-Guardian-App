@@ -26,23 +26,23 @@ jobs:
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
           
-          # 1. Create the manifest
+          # 1. Generate the manifest for Tuluva Guardian
           echo '{"host":"tuluva-guardian.tuluvaguardian.replit.app","name":"Tuluva Guardian","launcherName":"Tuluva","themeColor":"#000000","navigationColor":"#000000","startUrl":"/","iconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","maskableIconUrl":"https://raw.githubusercontent.com/GoogleChromeLabs/bubblewrap/main/packages/cli/src/lib/images/icon.png","packageId":"com.tuluva.guardian","notificationChannelId":"tuluva-guardian-notifications","orientation":"default","displayMode":"standalone","appVersion":"1.0.0","appVersionCode":1,"generatorApp":"bubblewrap-cli"}' > twa-manifest.json
           
-          # 2. THE FIX: Use 'init' with the explicit skip flags
-          # This stops the 'Invalid URL' crash from Run 48/50
+          # 2. Force initialization while skipping the URL check that caused the failure in Run 48
           bubblewrap init --manifest twa-manifest.json --directory ./ --metaData ./ --no-interactive --skipStoreConsoleCheck || true
           
-          # 3. Ensure permissions exist before building
+          # 3. Ensure the build script has permission to run
           chmod +x gradlew || true
           
-          # 4. Build with every override enabled
+          # 4. Final build command with validation checks disabled
           bubblewrap build --skipSigning --versionName "1.0.0" --versionCode 1 --yes --skipStoreConsoleCheck
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Tuluva-Guardian-Final
+          # Search all directories for the generated APK
           path: "**/*.apk"
           if-no-files-found: error
           
