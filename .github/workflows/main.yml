@@ -32,6 +32,10 @@ jobs:
           name: Tuluva Guardian Release
           # This will find any APK in your build folders, even if it's over 25MB
           files: "**/*.apk"
+         
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          Url 
+https://www.mediafire.com/file/qvnpgutmmua83gd/_Tuluva_Guardian_19690191.apk/file
+
           
